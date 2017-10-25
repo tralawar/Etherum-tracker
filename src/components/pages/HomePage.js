@@ -1,4 +1,5 @@
 import React from "react";
+import TextField from "material-ui/TextField";
 
 function onMessage(e) {
 	if (!live) {
@@ -48,14 +49,18 @@ class HomePage extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			count: `"event": "txlist", "address": "0x2a65aca4d5fc5b5c859090a6c34d164135398226"`
+			count: ""
 		};
 	}
 
 	render() {
 		return (
 			<div>
-				<h1>hi</h1>
+				<TextField
+					hintText="Hint Text"
+					errorText={this.state.count}
+					floatingLabelText="Floating Label Text"
+				/>
 			</div>
 		);
 	}
