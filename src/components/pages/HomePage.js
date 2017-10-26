@@ -1,69 +1,96 @@
 import React from "react";
+import PropTypes from "prop-types";
 import TextField from "material-ui/TextField";
+import RaisedButton from "material-ui/RaisedButton";
+import ethereum_address from "ethereum-address";
+import CircularProgress from "material-ui/CircularProgress";
+import Done from "material-ui-icons/Done";
+import { greenA400 } from "material-ui/styles/colors";
+import { connect, onMessage } from "../../utils/ws";
 
-function onMessage(e) {
-	if (!live) {
-		return;
-	}
-	var data;
-	try {
-		data = JSON.parse(e.data);
-		console.log(data);
-	} catch (err) {
-		console.error(err);
-	}
-}
-
-var new_uri = "wss://socket.etherscan.io/wshandler";
-
-var reconnectionPeriod = 100,
-	live = true;
-
-function connect() {
-	var ws = new WebSocket(new_uri);
-	ws.onopen = function() {
-		console.log("Websocket connected");
-		ws.send(
-			JSON.stringify({
-				event: "txlist",
-				address: "0x52bc44d5378309ee2abf1539bf71de1b7d7be3b5"
-			})
-		);
-	};
-	ws.onmessage = onMessage;
-	ws.onerror = function(e) {
-		console.error(e);
-	};
-	ws.onclose = function(e) {
-		console.log("Disconnected, attempting reconnect...");
-		setTimeout(function() {
-			console.log("Reconnecting...");
-			connect();
-		}, reconnectionPeriod);
-	};
-}
-
-connect();
+const styles = {
+	width: 500
+};
 
 class HomePage extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			count: ""
-		};
-	}
+	state = {
+		data: {
+			address: "",
+			subcribedAddress: ""
+		},
+		loading: false,
+		errors: ""
+	};
+
+	handleChange = e => {
+		this.setState({
+			...this.state,
+			data: { ...this.state.data, [e.target.name]: e.target.value }
+		});
+		const errors = this.validate(this.state.data.address);
+		this.setState({ errors });
+	};
+
+	handleBlur = e => {
+		const errors = this.validate(this.state.data.address);
+		this.setState({ errors });
+	};
+
+	onSubmit = e => {
+		e.preventDefault();
+		const errors = this.validate(this.state.data.address);
+		this.setState({ errors });
+		if (!this.state.errors) {
+			this.setState({ loading: true });
+			this.setState({
+				data: {
+					subcribedAddress: this.state.data.address,
+					address: ""
+				}
+			});
+		}
+		connect(this.state.data.subcribedAddress);
+	};
+
+	validate = data => {
+		let errors = {};
+		if (data.substring(0, 2) === "0x") {
+			console.log("Valid ethereum address.");
+		} else {
+			errors = "Invalid Ethereum address.";
+			return errors;
+		}
+	};
 
 	render() {
+		const { data, errors } = this.state;
 		return (
 			<div>
-				<TextField
-					hintText="Hint Text"
-					errorText={this.state.count}
-					floatingLabelText="Floating Label Text"
-				/>
+				<form onSubmit={this.onSubmit}>
+					<TextField
+						type="text"
+						id="address"
+						name="address"
+						hintText="Enter Etherum Address"
+						errorText={errors}
+						floatingLabelText="Etherum Address"
+						style={styles}
+						value={data.address}
+						onInput={this.handleChange}
+						onBlur={this.handleBlur}
+					/>
+					{!errors && data.address !== "" && <Done color={greenA400} />}
+					<br />
+					<RaisedButton label="Submit" type="submit" />
+				</form>
+				<h1>{this.state.data.subcribedAddress}</h1>
 			</div>
 		);
 	}
 }
+
+HomePage.propTypes = {
+	submit: PropTypes.func.isRequired
+};
 
 export default HomePage;

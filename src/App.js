@@ -16,7 +16,7 @@ class App extends Component {
           <h1 className="App-title">Welcome to React</h1>
         </header>
         <MuiThemeProvider>
-          <HomePage onMessage={JSON.stringify({ event: "ping" })} />
+          <HomePage onSubmit={this.submit} />
         </MuiThemeProvider>
       </div>
     );

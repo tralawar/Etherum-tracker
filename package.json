@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "ethereum-address": "0.0.4",
+    "js-sha3": "^0.6.1",
     "material-ui": "^0.19.4",
+    "material-ui-icons": "^1.0.0-beta.17",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-scripts": "1.0.14",
     "react-tap-event-plugin": "^3.0.2",
     "react-websocket": "^1.2.0",
+    "validator": "^9.1.1",
     "ws": "^3.2.0"
   },
   "scripts": {
