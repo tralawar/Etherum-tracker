@@ -5,7 +5,6 @@ export function WrapperWS(address) {
 
 	ws.onopen = function() {
 		console.log("Opening a connection...");
-		console.log(address);
 	};
 
 	ws.onclose = function(e) {
@@ -29,20 +28,33 @@ export function WrapperWS(address) {
 		}
 	};
 
+	setInterval(function() {
+		ws.send(
+			JSON.stringify({
+				event: "ping"
+			})
+		);
+	}, 20000);
+
 	ws.addEventListener("message", function(e) {
-		if (
-			JSON.parse(e.data)["event"] == "welcome" ||
-			JSON.parse(e.data)["event"] == "pong" ||
-			JSON.parse(e.data)["event"] == "txlist"
-		) {
+		if (JSON.parse(e.data)["event"] === "welcome") {
 			ws.send(
 				JSON.stringify({
 					event: "txlist",
 					address: address
 				})
 			);
-
 			console.log("Message from server: ", JSON.parse(e.data));
+		} else {
+			return;
+		}
+	});
+
+	ws.addEventListener("message", function(e) {
+		if (JSON.parse(e.data)["event"] === "txlist") {
+			var stats = JSON.parse(e.data);
+			console.log("Address: ", stats["address"]);
+			console.log("Details: ", stats["result"]);
 		} else {
 			return;
 		}
