@@ -1,46 +1,54 @@
-var new_uri = "wss://socket.etherscan.io/wshandler";
+export function WrapperWS(address) {
+	var ws = new WebSocket("wss://socket.etherscan.io/wshandler");
+	var reconnectionPeriod = 100,
+		live = true;
 
-var reconnectionPeriod = 100,
-	live = true;
-
-export function onMessage(e) {
-	if (!live) {
-		return;
-	}
-	var data;
-	try {
-		data = JSON.parse(e.data);
-		console.log(data);
-	} catch (err) {
-		console.error(err);
-	}
-}
-
-export function connect(subcribedAddress) {
-	var ws = new WebSocket(new_uri);
 	ws.onopen = function() {
-		console.log("Websocket connected");
+		console.log("Opening a connection...");
+		console.log(address);
 	};
-	ws.onmessage = onMessage;
 
-	ws.onerror = function(e) {
-		console.error(e);
-	};
 	ws.onclose = function(e) {
 		console.log("Disconnected, attempting reconnect...");
 		setTimeout(function() {
 			console.log("Reconnecting...");
-			connect();
+			WrapperWS(address);
 		}, reconnectionPeriod);
 	};
-}
 
-export function send(subcribedAddress) {
-	var ws = new WebSocket(new_uri);
-	ws.send(
-		JSON.stringify({
-			event: "txlist",
-			address: subcribedAddress
-		})
-	);
+	ws.onmessage = function(e) {
+		if (!live) {
+			return;
+		}
+		var data;
+		try {
+			data = JSON.parse(e.data);
+			console.log(data);
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
+	ws.addEventListener("message", function(e) {
+		if (
+			JSON.parse(e.data)["event"] == "welcome" ||
+			JSON.parse(e.data)["event"] == "pong" ||
+			JSON.parse(e.data)["event"] == "txlist"
+		) {
+			ws.send(
+				JSON.stringify({
+					event: "txlist",
+					address: address
+				})
+			);
+
+			console.log("Message from server: ", JSON.parse(e.data));
+		} else {
+			return;
+		}
+	});
+
+	ws.onerror = function(evt) {
+		console.log("ERR: " + evt.data);
+	};
 }

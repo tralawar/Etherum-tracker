@@ -3,10 +3,9 @@ import PropTypes from "prop-types";
 import TextField from "material-ui/TextField";
 import RaisedButton from "material-ui/RaisedButton";
 import ethereum_address from "ethereum-address";
-import CircularProgress from "material-ui/CircularProgress";
 import Done from "material-ui-icons/Done";
 import { greenA400 } from "material-ui/styles/colors";
-import { connect, onMessage } from "../../utils/ws";
+import { WrapperWS } from "../../utils/ws";
 
 const styles = {
 	width: 500
@@ -16,9 +15,8 @@ class HomePage extends React.Component {
 	state = {
 		data: {
 			address: "",
-			subcribedAddress: ""
+			subcribedAddress: []
 		},
-		loading: false,
 		errors: ""
 	};
 
@@ -41,15 +39,15 @@ class HomePage extends React.Component {
 		const errors = this.validate(this.state.data.address);
 		this.setState({ errors });
 		if (!this.state.errors) {
-			this.setState({ loading: true });
+			this.state.data.subcribedAddress = this.state.data.address;
 			this.setState({
 				data: {
-					subcribedAddress: this.state.data.address,
 					address: ""
 				}
 			});
 		}
-		connect(this.state.data.subcribedAddress);
+		console.log(this.state.data.subcribedAddress);
+		WrapperWS(this.state.data.subcribedAddress);
 	};
 
 	validate = data => {
@@ -89,8 +87,6 @@ class HomePage extends React.Component {
 	}
 }
 
-HomePage.propTypes = {
-	submit: PropTypes.func.isRequired
-};
+HomePage.propTypes = {};
 
 export default HomePage;
