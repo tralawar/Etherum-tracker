@@ -2,6 +2,7 @@ import React from "react";
 import TextField from "material-ui/TextField";
 import RaisedButton from "material-ui/RaisedButton";
 import Done from "material-ui-icons/Done";
+import LinearProgress from "material-ui/LinearProgress";
 import { greenA400 } from "material-ui/styles/colors";
 import { WrapperWS } from "../../utils/ws";
 import EthereumQRplugin from "ethereum-qr-code";
@@ -25,6 +26,10 @@ const styles = {
 			"linear-gradient(to bottom,rgba(255, 255, 255, 0.11) 0%,rgba(255, 255, 255, 0) 100%)",
 		filter:
 			"progid:DXImageTransform.Microsoft.gradient(startColorstr='#1cffffff',endColorstr='#00ffffff',GradientType=0)"
+	},
+	loadingStyle: {
+		width: "85%",
+		margin: "auto"
 	}
 };
 
@@ -82,6 +87,14 @@ class HomePage extends React.Component {
 		const errors = this.validate(this.state.data.address);
 		const currentAddress = this.state.data.address;
 		this.setState({ errors });
+
+		if (this.state.data.subcribedAddress !== currentAddress) {
+			while (document.getElementById("address-info").hasChildNodes()) {
+				document
+					.getElementById("address-info")
+					.removeChild(document.getElementById("address-info").lastChild);
+			}
+		}
 
 		if (!this.state.errors) {
 			WrapperWS(currentAddress);
@@ -149,8 +162,13 @@ class HomePage extends React.Component {
 							</tr>
 						</thead>
 					)}
+
 					<tbody id="address-info" />
 				</table>
+				{table &&
+					!document.getElementById("address-info").firstChild && (
+						<LinearProgress style={styles.loadingStyle} mode="indeterminate" />
+					)}
 			</div>
 		);
 	}
