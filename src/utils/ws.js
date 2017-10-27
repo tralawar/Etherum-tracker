@@ -1,7 +1,8 @@
 export function WrapperWS(address) {
 	var ws = new WebSocket("wss://socket.etherscan.io/wshandler");
 	var reconnectionPeriod = 100,
-		live = true;
+		live = true,
+		output = document.getElementById("address-info");
 
 	ws.onopen = function() {
 		console.log("Opening a connection...");
@@ -45,18 +46,43 @@ export function WrapperWS(address) {
 				})
 			);
 			console.log("Message from server: ", JSON.parse(e.data));
-		} else {
-			return;
 		}
 	});
 
 	ws.addEventListener("message", function(e) {
 		if (JSON.parse(e.data)["event"] === "txlist") {
 			var stats = JSON.parse(e.data);
-			console.log("Address: ", stats["address"]);
-			console.log("Details: ", stats["result"]);
-		} else {
-			return;
+
+			for (var i = 0; i < stats["result"].length; i++) {
+				var utcSeconds = parseInt(
+					JSON.stringify(stats["result"][i]["timeStamp"]).replace(/\"/g, ""),
+					10
+				);
+				var timeStampDate = new Date(utcSeconds * 1000);
+				var data = {
+					value: JSON.stringify(
+						(stats["result"][i]["value"] / 1000000000000000000).toFixed(18)
+					).replace(/\"/g, ""),
+					from: JSON.stringify(stats["result"][i]["from"]).replace(/\"/g, ""),
+					txid: JSON.stringify(stats["result"][i]["hash"]).replace(/\"/g, ""),
+					date: timeStampDate.toLocaleString([], {
+						weekday: "short",
+						hour: "2-digit",
+						minute: "2-digit"
+					})
+				};
+
+				var newTr = document.createElement("tr");
+				newTr.innerHTML = `
+				<tr>
+					<td class="eth-value">${data.value}</td>
+					<td class="eth-from"><a href="https://etherscan.io/address/${data.from}" target="_blank">${data.from}</a></td>
+					<td class="eth-txid"><a href="https://etherscan.io/address/${data.txid}" target="_blank">${data.txid}</a></td>
+					<td class="eth-date">${data.date}</td>
+				</tr>
+				`;
+				output.insertBefore(newTr, output.firstChild);
+			}
 		}
 	});
 
